@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pastel To-Do List</title>
+  <link rel="stylesheet" href="styles.css"/>
+  <link
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    rel="stylesheet"
+  />
+</head>
+<body>
+  <div class="overlay">
+    <div class="toggle-theme">
+      <button id="themeToggleBtn" aria-label="Toggle Dark/Light Mode" title="Toggle Dark/Light Mode">
+        <span id="themeIcon" class="icon">🌙</span>
+        <span id="themeText">Dark Mode</span>
+      </button>
+    </div>
+
+    <div class="container">
+      <h1>My To-Do List</h1>
+      <form id="todoForm" aria-label="Add new task form">
+        <input type="text" id="todoInput" placeholder="Add a new task..." required aria-required="true" aria-label="Task description"/>
+        <input type="date" id="todoDate" aria-label="Task due date"/>
+        <button type="submit" aria-label="Add task"><i class="fas fa-plus"></i> Add</button>
+      </form>
+      <ul id="todoList" aria-live="polite" aria-label="To-do tasks list"></ul>
+
+      <!-- Daily Summary Widget -->
+      <div id="dailySummary" aria-live="polite" role="region" aria-label="Daily summary"></div>
+
+      <!-- Calendar Container -->
+      <div id="calendar"></div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
