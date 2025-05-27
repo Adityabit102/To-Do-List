@@ -9,36 +9,32 @@ const themeToggleBtn = document.getElementById("themeToggleBtn");
 const themeIcon = document.getElementById("themeIcon");
 const themeText = document.getElementById("themeText");
 
-// Data storage for tasks, format: [{id, text, date, completed}]
+// Data storage for tasks
 let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
 
-// Current selected date on calendar (default today)
+// Current selected date
 let selectedDate = new Date();
 selectedDate.setHours(0, 0, 0, 0);
 
-// Initialize theme based on localStorage or default light
+// Theme
 let isDarkMode = localStorage.getItem("darkMode") === "true";
 if (isDarkMode) document.body.classList.add("dark-mode");
 updateThemeUI();
 
-// Utility functions
+// Utils
 function formatDate(date) {
   return date.toISOString().split("T")[0];
 }
-
 function formatDateDisplay(date) {
   return date.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
 }
-
-// Save tasks to localStorage
 function saveTasks() {
   localStorage.setItem("tasks", JSON.stringify(tasks));
 }
 
-// Render todo list for selected date
+// Task rendering
 function renderTasks() {
   todoList.innerHTML = "";
-
   const dateStr = formatDate(selectedDate);
   const filteredTasks = tasks.filter(task => task.date === dateStr);
 
@@ -58,7 +54,6 @@ function renderTasks() {
     li.setAttribute("tabindex", "0");
     if (task.completed) li.classList.add("completed");
 
-    // Toggle complete on click or Enter key
     li.addEventListener("click", () => toggleComplete(task.id));
     li.addEventListener("keydown", (e) => {
       if (e.key === "Enter" || e.key === " ") {
@@ -67,7 +62,6 @@ function renderTasks() {
       }
     });
 
-    // Remove button
     const removeBtn = document.createElement("button");
     removeBtn.textContent = "✕";
     removeBtn.setAttribute("aria-label", "Remove task");
@@ -82,15 +76,13 @@ function renderTasks() {
   });
 }
 
-// Toggle complete state
 function toggleComplete(id) {
-  tasks = tasks.map(task => task.id === id ? {...task, completed: !task.completed} : task);
+  tasks = tasks.map(task => task.id === id ? { ...task, completed: !task.completed } : task);
   saveTasks();
   renderTasks();
   updateDailySummary();
 }
 
-// Remove task
 function removeTask(id) {
   tasks = tasks.filter(task => task.id !== id);
   saveTasks();
@@ -98,7 +90,6 @@ function removeTask(id) {
   updateDailySummary();
 }
 
-// Add new task
 todoForm.addEventListener("submit", e => {
   e.preventDefault();
 
@@ -106,11 +97,7 @@ todoForm.addEventListener("submit", e => {
   let date = todoDateInput.value;
 
   if (!text) return alert("Task description cannot be empty.");
-
-  if (!date) {
-    // Default to selected date if date input is empty
-    date = formatDate(selectedDate);
-  }
+  if (!date) date = formatDate(selectedDate);
 
   const newTask = {
     id: Date.now(),
@@ -122,7 +109,6 @@ todoForm.addEventListener("submit", e => {
   tasks.push(newTask);
   saveTasks();
 
-  // If the new task is for selected date, render immediately
   if (date === formatDate(selectedDate)) {
     renderTasks();
     updateDailySummary();
@@ -132,14 +118,12 @@ todoForm.addEventListener("submit", e => {
   todoDateInput.value = "";
 });
 
-// Render calendar with current selected month/year
+// Calendar rendering
 function renderCalendar() {
   calendar.innerHTML = "";
-
   const year = selectedDate.getFullYear();
   const month = selectedDate.getMonth();
 
-  // Month and year header with navigation
   const monthNames = ["January", "February", "March", "April", "May", "June",
                       "July", "August", "September", "October", "November", "December"];
 
@@ -153,13 +137,9 @@ function renderCalendar() {
   prevBtn.textContent = "‹";
   prevBtn.title = "Previous Month";
   prevBtn.setAttribute("aria-label", "Previous month");
-  prevBtn.style.fontSize = "24px";
-  prevBtn.style.border = "none";
-  prevBtn.style.background = "transparent";
-  prevBtn.style.cursor = "pointer";
-  prevBtn.style.color = getComputedStyle(document.body).color;
+  prevBtn.style.cssText = "font-size:24px;border:none;background:transparent;cursor:pointer;color:" + getComputedStyle(document.body).color;
   prevBtn.addEventListener("click", () => {
-    selectedDate = new Date(year, month - 1, 1);
+    selectedDate = new Date(year, month - 1, selectedDate.getDate());
     renderCalendar();
     renderTasks();
     updateDailySummary();
@@ -169,13 +149,9 @@ function renderCalendar() {
   nextBtn.textContent = "›";
   nextBtn.title = "Next Month";
   nextBtn.setAttribute("aria-label", "Next month");
-  nextBtn.style.fontSize = "24px";
-  nextBtn.style.border = "none";
-  nextBtn.style.background = "transparent";
-  nextBtn.style.cursor = "pointer";
-  nextBtn.style.color = getComputedStyle(document.body).color;
+  nextBtn.style.cssText = "font-size:24px;border:none;background:transparent;cursor:pointer;color:" + getComputedStyle(document.body).color;
   nextBtn.addEventListener("click", () => {
-    selectedDate = new Date(year, month + 1, 1);
+    selectedDate = new Date(year, month + 1, selectedDate.getDate());
     renderCalendar();
     renderTasks();
     updateDailySummary();
@@ -191,7 +167,6 @@ function renderCalendar() {
   header.appendChild(nextBtn);
   calendar.appendChild(header);
 
-  // Create table for days
   const table = document.createElement("table");
   const thead = document.createElement("thead");
   const tbody = document.createElement("tbody");
@@ -206,7 +181,6 @@ function renderCalendar() {
   thead.appendChild(trHead);
   table.appendChild(thead);
 
-  // Calculate first day index and total days
   const firstDay = new Date(year, month, 1).getDay();
   const totalDays = new Date(year, month + 1, 0).getDate();
 
@@ -217,20 +191,15 @@ function renderCalendar() {
     for (let col = 0; col < 7; col++) {
       const td = document.createElement("td");
 
-      if (row === 0 && col < firstDay) {
-        // Empty cells before first day
-        td.classList.add("disabled");
-        td.textContent = "";
-      } else if (dayCount > totalDays) {
-        // Empty cells after last day
+      if (row === 0 && col < firstDay || dayCount > totalDays) {
         td.classList.add("disabled");
         td.textContent = "";
       } else {
-        td.textContent = dayCount;
+        const currentDay = dayCount;
+        td.textContent = currentDay;
 
-        // Highlight selected date
         if (
-          dayCount === selectedDate.getDate() &&
+          currentDay === selectedDate.getDate() &&
           month === selectedDate.getMonth() &&
           year === selectedDate.getFullYear()
         ) {
@@ -238,32 +207,20 @@ function renderCalendar() {
           td.setAttribute("aria-current", "date");
         }
 
-        // If tasks exist on this date, add dot or indicator
-        const dayDateStr = formatDate(new Date(year, month, dayCount));
+        const dayDateStr = formatDate(new Date(year, month, currentDay));
         if (tasks.some(task => task.date === dayDateStr)) {
           const dot = document.createElement("span");
-          dot.style.display = "inline-block";
-          dot.style.width = "6px";
-          dot.style.height = "6px";
-          dot.style.backgroundColor = "#fb8c00";
-          dot.style.borderRadius = "50%";
-          dot.style.marginLeft = "4px";
-          dot.style.verticalAlign = "middle";
-
-          if (document.body.classList.contains("dark-mode")) {
-            dot.style.backgroundColor = "#ab47bc";
-          }
-
+          dot.style.cssText = "display:inline-block;width:6px;height:6px;border-radius:50%;margin-left:4px;vertical-align:middle;";
+          dot.style.backgroundColor = document.body.classList.contains("dark-mode") ? "#ab47bc" : "#fb8c00";
           td.appendChild(dot);
         }
 
-        // Make dates clickable
         td.tabIndex = 0;
         td.setAttribute("role", "button");
-        td.setAttribute("aria-label", `Select date ${monthNames[month]} ${dayCount}, ${year}`);
+        td.setAttribute("aria-label", `Select date ${monthNames[month]} ${currentDay}, ${year}`);
 
         td.addEventListener("click", () => {
-          selectedDate = new Date(year, month, dayCount);
+          selectedDate = new Date(year, month, currentDay);
           renderCalendar();
           renderTasks();
           updateDailySummary();
@@ -272,7 +229,7 @@ function renderCalendar() {
         td.addEventListener("keydown", (e) => {
           if (e.key === "Enter" || e.key === " ") {
             e.preventDefault();
-            selectedDate = new Date(year, month, dayCount);
+            selectedDate = new Date(year, month, currentDay);
             renderCalendar();
             renderTasks();
             updateDailySummary();
@@ -291,7 +248,7 @@ function renderCalendar() {
   calendar.appendChild(table);
 }
 
-// Update daily summary widget
+// Daily summary
 function updateDailySummary() {
   const dateStr = formatDate(selectedDate);
   const filteredTasks = tasks.filter(task => task.date === dateStr);
@@ -309,16 +266,12 @@ function updateDailySummary() {
   }
 }
 
-// Theme toggle handler
 themeToggleBtn.addEventListener("click", () => {
   isDarkMode = !isDarkMode;
   localStorage.setItem("darkMode", isDarkMode);
   document.body.classList.toggle("dark-mode");
-
-  // Animate icon spin
   themeIcon.classList.add("spin");
   setTimeout(() => themeIcon.classList.remove("spin"), 600);
-
   updateThemeUI();
   renderCalendar();
   renderTasks();
@@ -326,16 +279,10 @@ themeToggleBtn.addEventListener("click", () => {
 });
 
 function updateThemeUI() {
-  if (isDarkMode) {
-    themeIcon.textContent = "☀️";
-    themeText.textContent = "Light Mode";
-  } else {
-    themeIcon.textContent = "🌙";
-    themeText.textContent = "Dark Mode";
-  }
+  themeIcon.textContent = isDarkMode ? "☀️" : "🌙";
+  themeText.textContent = isDarkMode ? "Light Mode" : "Dark Mode";
 }
 
-// Initialize everything
 renderCalendar();
 renderTasks();
 updateDailySummary();
